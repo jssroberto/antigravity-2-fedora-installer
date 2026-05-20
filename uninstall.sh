@@ -15,11 +15,11 @@ NC='\033[0m' # No Color
 echo -e "${BLUE}=== Antigravity Uninstaller ===${NC}"
 
 # Define target paths
-SYSTEM_OPT_DIR="/opt/Antigravity-x64"
+SYSTEM_OPT_DIR="/opt/Antigravity-Linux"
 SYSTEM_BIN_LINK="/usr/local/bin/antigravity"
 SYSTEM_DESKTOP_DIR="/usr/share/applications"
 
-USER_SHARE_DIR="$HOME/.local/share/Antigravity-x64"
+USER_SHARE_DIR="$HOME/.local/share/Antigravity-Linux"
 USER_BIN_DIR="$HOME/.local/bin"
 USER_DESKTOP_DIR="$HOME/.local/share/applications"
 
