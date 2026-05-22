@@ -11,7 +11,7 @@ A shell-based installation and lifecycle management utility for running Antigrav
 
 ## Technical Features
 
-*   **🔒 Isolated Fetch & Extract:** Downloads official Linux x64 tarballs from Google Cloud Storage to secure temporary directories before validation and extraction, preventing raw-stream security vulnerabilities.
+*   **🔒 Isolated Fetch & Extract:** Downloads official Linux x86_64 or ARM64 (aarch64) tarballs from Google Cloud Storage to secure temporary directories before validation and extraction, preventing raw-stream security vulnerabilities.
 *   **⚙️ Native Wayland & GPU Optimization:** Automatically injects native Chromium Wayland ozone parameters (`--ozone-platform-hint=wayland` and `--enable-features=WaylandWindowDecorations,CanvasOopRasterization`) to bypass XWayland completely, eliminating graphics lag and text blurriness.
 *   **🛡️ SELinux Restorations:** Invokes `restorecon` recursively across installed application paths to maintain strict Fedora security policies.
 *   **👥 Dual Install Scope Support:** Operates under system-wide paths (e.g. `/opt`, `/usr/local/bin`) or completely passwordless user-space scopes (e.g. `~/.local/share`, `~/.local/bin`).
@@ -33,7 +33,7 @@ curl -sSL "https://raw.githubusercontent.com/jssroberto/antigravity-2-fedora-ins
 ## Usage & Installation Scopes
 
 ### 1. System-Wide Installation (Default)
-Extracts the application folder to `/opt/Antigravity-x64/`, symlinks the execution path to `/usr/local/bin/antigravity`, and registers system-wide launcher menus.
+Extracts the application folder to `/opt/Antigravity-Linux/`, symlinks the execution path to `/usr/local/bin/antigravity`, and registers system-wide launcher menus.
 ```bash
 ./install.sh
 ```
@@ -44,7 +44,7 @@ Installs completely under your home directory without requiring elevated privile
 ```bash
 ./install.sh --user
 ```
-*   **Application Directory:** `~/.local/share/Antigravity-x64/`
+*   **Application Directory:** `~/.local/share/Antigravity-Linux/`
 *   **Executable Link:** `~/.local/bin/antigravity`
 *   **Desktop Shortcut:** `~/.local/share/applications/antigravity.desktop`
 
@@ -78,7 +78,7 @@ To install a specific version or override the GCS mirror URL:
 If you maintain both the Antigravity IDE (v1.x) and the new standalone application (v2.0) on the same machine, this installation is designed to support both working side-by-side, with dedicated launcher shortcuts:
 
 1. **Antigravity IDE (v1.x):** Registered as **"Antigravity"** (executes `/usr/share/antigravity/antigravity`).
-2. **Antigravity 2.0 (Standalone v2.0):** Registered as **"Antigravity 2.0"** (executes `/opt/Antigravity-x64/antigravity` or local space).
+2. **Antigravity 2.0 (Standalone v2.0):** Registered as **"Antigravity 2.0"** (executes `/opt/Antigravity-Linux/antigravity` or local space).
 
 ### Wayland Dock Grouping Limitation
 Under native Wayland sessions, both the v1.x IDE and the v2.0 standalone executables identify using the exact same Wayland `app_id` (`"antigravity"`).

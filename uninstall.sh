@@ -15,11 +15,11 @@ NC='\033[0m' # No Color
 echo -e "${BLUE}=== Antigravity Uninstaller ===${NC}"
 
 # Define target paths
-SYSTEM_OPT_DIR="/opt/Antigravity-x64"
+SYSTEM_OPT_DIR="/opt/Antigravity-Linux"
 SYSTEM_BIN_LINK="/usr/local/bin/antigravity"
 SYSTEM_DESKTOP_DIR="/usr/share/applications"
 
-USER_SHARE_DIR="$HOME/.local/share/Antigravity-x64"
+USER_SHARE_DIR="$HOME/.local/share/Antigravity-Linux"
 USER_BIN_DIR="$HOME/.local/bin"
 USER_DESKTOP_DIR="$HOME/.local/share/applications"
 
@@ -39,11 +39,12 @@ safe_remove() {
 }
 
 # 1. Check System-wide installations
-if [ -d "$SYSTEM_OPT_DIR" ] || [ -f "$SYSTEM_DESKTOP_DIR/antigravity.desktop" ] || [ -L "$SYSTEM_BIN_LINK" ]; then
+if [ -d "$SYSTEM_OPT_DIR" ] || [ -d "/opt/Antigravity-x64" ] || [ -f "$SYSTEM_DESKTOP_DIR/antigravity.desktop" ] || [ -L "$SYSTEM_BIN_LINK" ]; then
     echo -e "${BLUE}Found system-wide installation files. Requesting removal...${NC}"
     
     # Safely remove opt dir, symlink, and desktop entries
     safe_remove "$SYSTEM_OPT_DIR" "true"
+    safe_remove "/opt/Antigravity-x64" "true"
     safe_remove "$SYSTEM_BIN_LINK" "true"
     safe_remove "$SYSTEM_DESKTOP_DIR/antigravity.desktop" "true"
     safe_remove "$SYSTEM_DESKTOP_DIR/antigravity-2.desktop" "true"
@@ -54,11 +55,12 @@ if [ -d "$SYSTEM_OPT_DIR" ] || [ -f "$SYSTEM_DESKTOP_DIR/antigravity.desktop" ] 
 fi
 
 # 2. Check User-local installations
-if [ -d "$USER_SHARE_DIR" ] || [ -f "$USER_DESKTOP_DIR/antigravity.desktop" ] || [ -f "$USER_DESKTOP_DIR/antigravity-2.desktop" ] || [ -f "$USER_BIN_DIR/antigravity" ]; then
+if [ -d "$USER_SHARE_DIR" ] || [ -d "$HOME/.local/share/Antigravity-x64" ] || [ -f "$USER_DESKTOP_DIR/antigravity.desktop" ] || [ -f "$USER_DESKTOP_DIR/antigravity-2.desktop" ] || [ -f "$USER_BIN_DIR/antigravity" ]; then
     echo -e "${BLUE}Found user-local installation files. Removing...${NC}"
     
     # Safely remove local share, bin link, and desktop entries
     safe_remove "$USER_SHARE_DIR" "false"
+    safe_remove "$HOME/.local/share/Antigravity-x64" "false"
     safe_remove "$USER_BIN_DIR/antigravity" "false"
     safe_remove "$USER_DESKTOP_DIR/antigravity.desktop" "false"
     safe_remove "$USER_DESKTOP_DIR/antigravity-2.desktop" "false"

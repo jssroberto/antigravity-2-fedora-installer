@@ -80,14 +80,14 @@ echo -e "${BLUE}Targeting scope: ${BOLD}${INSTALL_SCOPE}${NC}"
 # Define paths based on install scope
 if [[ "$INSTALL_SCOPE" == "system" ]]; then
     TARGET_PARENT_DIR="/opt"
-    TARGET_APP_DIR="/opt/Antigravity-x64"
+    TARGET_APP_DIR="/opt/Antigravity-Linux"
     TARGET_BIN_PATH="/usr/local/bin/antigravity"
     DESKTOP_ENTRY_DIR="/usr/share/applications"
     DESKTOP_ENTRY_PATH="$DESKTOP_ENTRY_DIR/antigravity.desktop"
     ICON_LOOKUP_NAME="antigravity"
 else
     TARGET_PARENT_DIR="$HOME/.local/share"
-    TARGET_APP_DIR="$HOME/.local/share/Antigravity-x64"
+    TARGET_APP_DIR="$HOME/.local/share/Antigravity-Linux"
     TARGET_BIN_PATH="$HOME/.local/bin/antigravity"
     DESKTOP_ENTRY_DIR="$HOME/.local/share/applications"
     DESKTOP_ENTRY_PATH="$DESKTOP_ENTRY_DIR/antigravity.desktop"
@@ -96,8 +96,8 @@ fi
 
 # Pre-flight check: CPU Architecture
 ARCH=$(uname -m)
-if [[ "$ARCH" != "x86_64" ]]; then
-    echo -e "${RED}Error: Antigravity Linux build is strictly x86_64. Detected: ${ARCH}${NC}" >&2
+if [[ "$ARCH" != "x86_64" && "$ARCH" != "aarch64" ]]; then
+    echo -e "${RED}Error: Antigravity Linux build is strictly x86_64 or aarch64. Detected: ${ARCH}${NC}" >&2
     exit 1
 fi
 
@@ -165,8 +165,29 @@ fi
 # Ensure parent directory exists
 escalate_cmd mkdir -p "$TARGET_PARENT_DIR"
 
-# Extract archive directly into destination
-escalate_cmd tar -xzf "$TEMP_ARCHIVE" -C "$TARGET_PARENT_DIR"
+# Extract archive to a temporary location to detect the internal folder name
+EXTRACT_TEMP="$TEMP_DIR/extract_temp"
+mkdir -p "$EXTRACT_TEMP"
+tar -xzf "$TEMP_ARCHIVE" -C "$EXTRACT_TEMP"
+
+# Locate the extracted directory cleanly without fragile ls parsing
+EXTRACTED_DIR_NAME=""
+for d in "$EXTRACT_TEMP"/*/; do
+    if [[ -d "$d" ]]; then
+        EXTRACTED_DIR_NAME=$(basename "$d")
+        break
+    fi
+done
+
+if [[ -z "$EXTRACTED_DIR_NAME" ]]; then
+    echo -e "${RED}Error: Archive extraction failed or archive is empty.${NC}" >&2
+    exit 1
+fi
+
+echo -e "${BLUE}Detected package folder: $EXTRACTED_DIR_NAME${NC}"
+
+# Move the extracted content to the final destination
+escalate_cmd mv "$EXTRACT_TEMP/$EXTRACTED_DIR_NAME" "$TARGET_APP_DIR"
 
 # Verify execution capability
 if [[ ! -f "$TARGET_APP_DIR/antigravity" ]]; then
