@@ -15,34 +15,88 @@ NC='\033[0m' # No Color
 
 echo -e "${BLUE}${BOLD}=== Antigravity Uninstaller ===${NC}"
 
-# --- INTERACTIVE MENU ---
-echo -e "\n${BOLD}Select what you want to uninstall:${NC}"
-echo -e "  ${GREEN}1)${NC} Uninstall Antigravity 2.0 ${BOLD}IDE${NC} only"
-echo -e "  ${GREEN}2)${NC} Uninstall Antigravity 2.0 ${BOLD}Agent${NC} only"
-echo -e "  ${GREEN}3)${NC} Uninstall ${BOLD}Both${NC} (Complete Cleanup)"
-echo -ne "\nEnter an option [1-3]: "
-
-read -r OPTION
-
+# Default values
 REMOVE_IDE=false
 REMOVE_AGENT=false
+INSTALL_SCOPE="all"
 
-case "$OPTION" in
-    1)
-        REMOVE_IDE=true
-        ;;
-    2)
-        REMOVE_AGENT=true
-        ;;
-    3)
-        REMOVE_IDE=true
-        REMOVE_AGENT=true
-        ;;
-    *)
-        echo -e "${RED}Invalid option. Canceling uninstallation.${NC}" >&2
+show_help() {
+    cat << EOF
+Usage: $(basename "$0") [options]
+
+Options:
+  --ide       Uninstall Antigravity 2.0 IDE only.
+  --agent     Uninstall Antigravity 2.0 Agent only.
+  --both      Uninstall both variants (complete cleanup).
+  --user      Limit scope to user space (~/.local) without requiring root privileges.
+  -h, --help  Show this help message.
+EOF
+}
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --ide)
+            REMOVE_IDE=true
+            shift
+            ;;
+        --agent)
+            REMOVE_AGENT=true
+            shift
+            ;;
+        --both)
+            REMOVE_IDE=true
+            REMOVE_AGENT=true
+            shift
+            ;;
+        --user)
+            INSTALL_SCOPE="user"
+            shift
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}Error: Unknown option '$1'${NC}" >&2
+            show_help
+            exit 1
+            ;;
+    esac
+done
+
+# --- INTERACTIVE MENU ---
+if [[ "$REMOVE_IDE" == "false" && "$REMOVE_AGENT" == "false" ]]; then
+    if [[ ! -t 0 ]]; then
+        echo -e "${RED}Error: Standard input is not a terminal. Please specify what to remove using --ide, --agent, or --both.${NC}" >&2
         exit 1
-        ;;
-esac
+    fi
+
+    echo -e "\n${BOLD}Select what you want to uninstall:${NC}"
+    echo -e "  ${GREEN}1)${NC} Uninstall Antigravity 2.0 ${BOLD}IDE${NC} only"
+    echo -e "  ${GREEN}2)${NC} Uninstall Antigravity 2.0 ${BOLD}Agent${NC} only"
+    echo -e "  ${GREEN}3)${NC} Uninstall ${BOLD}Both${NC} (Complete Cleanup)"
+    echo -ne "\nEnter an option [1-3]: "
+
+    read -r OPTION
+
+    case "$OPTION" in
+        1)
+            REMOVE_IDE=true
+            ;;
+        2)
+            REMOVE_AGENT=true
+            ;;
+        3)
+            REMOVE_IDE=true
+            REMOVE_AGENT=true
+            ;;
+        *)
+            echo -e "${RED}Invalid option. Canceling uninstallation.${NC}" >&2
+            exit 1
+            ;;
+    esac
+fi
 
 # Define target paths
 SYSTEM_DESKTOP_DIR="/usr/share/applications"

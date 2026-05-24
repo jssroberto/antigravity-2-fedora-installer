@@ -94,6 +94,10 @@ echo -e "${BLUE}${BOLD}=== Antigravity 2.0 Installer ===${NC}"
 
 # --- INTERACTIVE MENU ---
 if [[ -z "$APP_MODE" ]]; then
+    if [[ ! -t 0 ]]; then
+        echo -e "${RED}Error: Standard input is not a terminal. Please specify --mode <ide|agent>.${NC}" >&2
+        exit 1
+    fi
     echo -e "\n${BOLD}Select the version you want to install:${NC}"
     echo -e "  ${GREEN}1)${NC} Antigravity 2.0 ${BOLD}IDE${NC} (Development Environment)"
     echo -e "  ${GREEN}2)${NC} Antigravity 2.0 ${BOLD}Agent${NC} (Background Agent / Hub)"
@@ -322,7 +326,7 @@ escalate_cmd rm -f "$DESKTOP_ENTRY_DIR/${APP_NAME_SHORT}-2.desktop"
 
 # Generate the desktop integration template dynamically in the secure temp directory
 TEMP_DESKTOP="$TEMP_DIR/${APP_NAME_SHORT}.desktop"
-cat << EOF > "$TEMP_DESKTOP"
+cat << 'EOF' > "$TEMP_DESKTOP"
 [Desktop Entry]
 Version=1.0
 Type=Application
