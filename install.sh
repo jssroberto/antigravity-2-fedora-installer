@@ -119,6 +119,24 @@ if [[ -z "$APP_MODE" ]]; then
     esac
 fi
 
+# Pre-flight check: CPU Architecture
+ARCH=$(uname -m)
+if [[ "$ARCH" != "x86_64" && "$ARCH" != "aarch64" ]]; then
+    echo -e "${RED}Error: Antigravity Linux build is strictly x86_64 or aarch64. Detected: ${ARCH}${NC}" >&2
+    exit 1
+fi
+
+# Dynamic URL Selection based on architecture
+if [[ "$ARCH" == "aarch64" ]]; then
+    DOWNLOAD_URL_AGENT="https://storage.googleapis.com/antigravity-public/antigravity-hub/2.0.6-5413878570549248/linux-arm/Antigravity.tar.gz"
+    if [[ "$APP_MODE" == "ide" ]]; then
+        echo -e "${YELLOW}Warning: Native ARM64 build is not officially supported for the IDE variant.${NC}" >&2
+        echo -e "${YELLOW}Defaulting to the standard x86_64 package (requires compatibility layers).${NC}" >&2
+    fi
+else
+    DOWNLOAD_URL_AGENT="https://storage.googleapis.com/antigravity-public/antigravity-hub/2.0.6-5413878570549248/linux-x64/Antigravity.tar.gz"
+fi
+
 # Define dynamic variables based on selected mode
 if [[ "$APP_MODE" == "ide" ]]; then
     APP_NAME_SHORT="antigravity-ide"
@@ -152,13 +170,6 @@ else
     DESKTOP_ENTRY_DIR="$HOME/.local/share/applications"
     DESKTOP_ENTRY_PATH="${DESKTOP_ENTRY_DIR}/${APP_NAME_SHORT}.desktop"
     ICON_LOOKUP_NAME="antigravity" # Force native asset resource name for desktop styling
-fi
-
-# Pre-flight check: CPU Architecture
-ARCH=$(uname -m)
-if [[ "$ARCH" != "x86_64" && "$ARCH" != "aarch64" ]]; then
-    echo -e "${RED}Error: Antigravity Linux build is strictly x86_64 or aarch64. Detected: ${ARCH}${NC}" >&2
-    exit 1
 fi
 
 # Pre-flight check: Required utilities
