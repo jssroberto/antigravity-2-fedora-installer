@@ -119,35 +119,39 @@ safe_remove() {
 
 # --- UNINSTALLATION PROCESS ---
 
-# 1. System-wide removal (Requires sudo if components exist)
-if [ "$REMOVE_AGENT" = "true" ]; then
-    echo -e "\n${BLUE}Checking for system-wide Agent components...${NC}"
-    safe_remove "/opt/Antigravity-Linux" "true"
-    safe_remove "/opt/Antigravity-x64" "true"
-    safe_remove "/usr/local/bin/antigravity" "true"
-    safe_remove "$SYSTEM_DESKTOP_DIR/antigravity.desktop" "true"
-    safe_remove "$SYSTEM_DESKTOP_DIR/antigravity-legacy.desktop" "true"
-    safe_remove "$SYSTEM_DESKTOP_DIR/antigravity-2.desktop" "true"
-    safe_remove "$SYSTEM_DESKTOP_DIR/antigravity-url-handler.desktop" "true"
-fi
+# 1. System-wide removal (Requires sudo if components exist, only executed if scope is not "user")
+if [ "$INSTALL_SCOPE" != "user" ]; then
+    if [ "$REMOVE_AGENT" = "true" ]; then
+        echo -e "\n${BLUE}Checking for system-wide Agent components...${NC}"
+        safe_remove "/opt/antigravity-Linux" "true"
+        safe_remove "/opt/Antigravity-Linux" "true"
+        safe_remove "/opt/Antigravity-x64" "true"
+        safe_remove "/usr/local/bin/antigravity" "true"
+        safe_remove "$SYSTEM_DESKTOP_DIR/antigravity.desktop" "true"
+        safe_remove "$SYSTEM_DESKTOP_DIR/antigravity-legacy.desktop" "true"
+        safe_remove "$SYSTEM_DESKTOP_DIR/antigravity-2.desktop" "true"
+        safe_remove "$SYSTEM_DESKTOP_DIR/antigravity-url-handler.desktop" "true"
+    fi
 
-if [ "$REMOVE_IDE" = "true" ]; then
-    echo -e "\n${BLUE}Checking for system-wide IDE components...${NC}"
-    safe_remove "/opt/antigravity-ide-Linux" "true"
-    safe_remove "/usr/local/bin/antigravity-ide" "true"
-    safe_remove "$SYSTEM_DESKTOP_DIR/antigravity-ide.desktop" "true"
-    safe_remove "$SYSTEM_DESKTOP_DIR/antigravity-ide-legacy.desktop" "true"
-fi
+    if [ "$REMOVE_IDE" = "true" ]; then
+        echo -e "\n${BLUE}Checking for system-wide IDE components...${NC}"
+        safe_remove "/opt/antigravity-ide-Linux" "true"
+        safe_remove "/usr/local/bin/antigravity-ide" "true"
+        safe_remove "$SYSTEM_DESKTOP_DIR/antigravity-ide.desktop" "true"
+        safe_remove "$SYSTEM_DESKTOP_DIR/antigravity-ide-legacy.desktop" "true"
+    fi
 
-# Refresh system-wide desktop database if needed
-if [ -d "$SYSTEM_DESKTOP_DIR" ]; then
-    sudo update-desktop-database "$SYSTEM_DESKTOP_DIR" || true
+    # Refresh system-wide desktop database if needed
+    if [ -d "$SYSTEM_DESKTOP_DIR" ]; then
+        sudo update-desktop-database "$SYSTEM_DESKTOP_DIR" || true
+    fi
 fi
 
 
 # 2. User-local removal (No sudo required)
 if [ "$REMOVE_AGENT" = "true" ]; then
     echo -e "\n${BLUE}Checking for user-local Agent components...${NC}"
+    safe_remove "$HOME/.local/share/antigravity-Linux" "false"
     safe_remove "$HOME/.local/share/Antigravity-Linux" "false"
     safe_remove "$HOME/.local/share/Antigravity-x64" "false"
     safe_remove "$HOME/.local/bin/antigravity" "false"
