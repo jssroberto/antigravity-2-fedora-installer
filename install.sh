@@ -227,13 +227,28 @@ fi
 
 # Pre-flight check: Required utilities
 echo -e "${YELLOW}Verifying system utilities...${NC}"
-for util in curl tar sed update-desktop-database; do
+for util in curl tar sed update-desktop-database df awk; do
     if ! command -v "$util" &> /dev/null; then
         echo -e "${RED}Error: Required command '$util' is missing.${NC}" >&2
         exit 1
     fi
 done
 echo -e "${GREEN}✓ All core utilities verified.${NC}"
+
+# Pre-flight check: Available disk space (POSIX-compliant check)
+echo -e "${YELLOW}Verifying available disk space...${NC}"
+CHECK_PATH="$TARGET_PARENT_DIR"
+while [[ ! -d "$CHECK_PATH" ]]; do
+    CHECK_PATH=$(dirname "$CHECK_PATH")
+done
+
+AVAILABLE_KB=$(df -Pk "$CHECK_PATH" | tail -1 | awk '{print $4}')
+if [[ -n "$AVAILABLE_KB" && "$AVAILABLE_KB" -lt 512000 ]]; then
+    echo -e "${RED}Error: Insufficient disk space in target partition ($CHECK_PATH).${NC}" >&2
+    echo -e "${RED}Available: $((AVAILABLE_KB / 1024))MB, Required: 500MB headroom.${NC}" >&2
+    exit 1
+fi
+echo -e "${GREEN}✓ Disk space verification passed ($((AVAILABLE_KB / 1024))MB available).${NC}"
 
 # Setup secure cleanup on script exit or interrupt
 cleanup() {
