@@ -27,6 +27,10 @@ NC='\033[0m' # No Color
 INSTALL_SCOPE="system"
 APP_MODE="" # Starts empty to force interaction if not provided
 
+VERSION_IDE="2.0.3"
+VERSION_AGENT="2.0.6"
+APP_VERSION=""
+
 DOWNLOAD_URL_IDE="https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.0.3-6242596486512640/linux-x64/Antigravity%20IDE.tar.gz"
 DOWNLOAD_URL_AGENT="https://storage.googleapis.com/antigravity-public/antigravity-hub/2.0.6-5413878570549248/linux-x64/Antigravity.tar.gz"
 
@@ -143,12 +147,14 @@ if [[ "$APP_MODE" == "ide" ]]; then
     APP_NAME_PRETTY="Antigravity 2.0 IDE"
     APP_COMMENT="Experience liftoff (v2.0 Standalone IDE)"
     BINARY_NAME="antigravity-ide"
+    APP_VERSION="$VERSION_IDE"
     [[ -z "$DOWNLOAD_URL" ]] && DOWNLOAD_URL="$DOWNLOAD_URL_IDE"
 else
     APP_NAME_SHORT="antigravity"
     APP_NAME_PRETTY="Antigravity 2.0 Agent"
     APP_COMMENT="Experience liftoff (v2.0 Agent)"
     BINARY_NAME="antigravity"
+    APP_VERSION="$VERSION_AGENT"
     [[ -z "$DOWNLOAD_URL" ]] && DOWNLOAD_URL="$DOWNLOAD_URL_AGENT"
 fi
 
@@ -170,6 +176,27 @@ else
     DESKTOP_ENTRY_DIR="$HOME/.local/share/applications"
     DESKTOP_ENTRY_PATH="${DESKTOP_ENTRY_DIR}/${APP_NAME_SHORT}.desktop"
     ICON_LOOKUP_NAME="antigravity" # Force native asset resource name for desktop styling
+fi
+
+# Detect currently installed version
+CURRENT_VERSION="none"
+if [[ -f "$TARGET_APP_DIR/version.txt" ]]; then
+    CURRENT_VERSION=$(cat "$TARGET_APP_DIR/version.txt" 2>/dev/null || echo "unknown")
+elif [[ -d "$TARGET_APP_DIR" || ( "$INSTALL_SCOPE" == "system" && "$APP_NAME_SHORT" == "antigravity" && -d "/opt/Antigravity-x64" ) ]]; then
+    # Fallback to handle legacy installations:
+    # If the default Agent target directory or the legacy /opt/Antigravity-x64 folder exists,
+    # it is a legacy version (e.g. 2.0.0).
+    CURRENT_VERSION="2.0.0-legacy"
+fi
+
+if [[ "$CURRENT_VERSION" != "none" ]]; then
+    if [[ "$CURRENT_VERSION" == "$APP_VERSION" ]]; then
+        echo -e "${YELLOW}Notice: ${APP_NAME_PRETTY} v${CURRENT_VERSION} is already installed.${NC}"
+    else
+        echo -e "${GREEN}Upgrade Notice: Upgrading ${APP_NAME_PRETTY} from v${CURRENT_VERSION} to v${APP_VERSION}...${NC}"
+    fi
+else
+    echo -e "${GREEN}New installation: Installing ${APP_NAME_PRETTY} v${APP_VERSION}...${NC}"
 fi
 
 # Pre-flight check: Required utilities
@@ -259,6 +286,9 @@ echo -e "${BLUE}Detected package folder: $EXTRACTED_DIR_NAME${NC}"
 
 # Move the extracted content to the final destination
 escalate_cmd mv "$EXTRACT_TEMP/$EXTRACTED_DIR_NAME" "$TARGET_APP_DIR"
+
+# Write the version metadata file
+echo "$APP_VERSION" | escalate_cmd tee "$TARGET_APP_DIR/version.txt" > /dev/null
 
 # Verify execution capability using dynamic binary name
 if [[ ! -f "$TARGET_APP_DIR/$BINARY_NAME" ]]; then
