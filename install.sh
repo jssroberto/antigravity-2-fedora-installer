@@ -484,3 +484,23 @@ if [[ "$LEGACY_REPOSITIONED" == "true" ]]; then
     echo -e "  Due to GNOME Shell's launcher grid caching, you may need to **log out and log back in**"
     echo -e "  for both launchers to appear side-by-side in your applications drawer."
 fi
+
+# Post-install Shell PATH verification diagnostics
+if [[ "$INSTALL_SCOPE" == "user" ]]; then
+    BIN_DIR=$(dirname "$TARGET_BIN_PATH")
+    if [[ ":$PATH:" != *":$BIN_DIR:"* && ":$PATH:" != *":${BIN_DIR/#$HOME/\~}:"* ]]; then
+        SHELL_NAME=$(basename "${SHELL:-bash}")
+        CONFIG_FILE="$HOME/.bashrc"
+        if [[ "$SHELL_NAME" == "zsh" ]]; then
+            CONFIG_FILE="$HOME/.zshrc"
+        elif [[ "$SHELL_NAME" == "ksh" ]]; then
+            CONFIG_FILE="$HOME/.kshrc"
+        fi
+
+        echo -e "\n${YELLOW}${BOLD}⚠️  Shell Configuration Notice:${NC}"
+        echo -e "  The local bin directory (${BOLD}${BIN_DIR}${NC}) is not in your system ${BOLD}PATH${NC} variable."
+        echo -e "  To launch the application using the '${BOLD}${APP_NAME_SHORT}${NC}' command, add it by running:"
+        echo -e "  ${BLUE}echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ${CONFIG_FILE} && source ${CONFIG_FILE}${NC}"
+    fi
+fi
+
