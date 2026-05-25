@@ -38,6 +38,7 @@ DRY_RUN=false
 TEMP_DIR=""
 LEGACY_REPOSITIONED=false
 DOWNLOAD_URL=""
+AUTO_CONFIRM=false
 
 # Print usage instructions
 show_help() {
@@ -49,6 +50,7 @@ Options:
   --user             Install to user space (~/.local) without requiring root privileges.
   --url <url>        Override the default download URL.
   --dry-run          Perform pre-flight checks and package download only. No files written.
+  -y, --yes          Automatic yes to prompts (bypass confirmation).
   -h, --help         Show this help message.
 EOF
 }
@@ -80,6 +82,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --dry-run)
             DRY_RUN=true
+            shift
+            ;;
+        -y|--yes)
+            AUTO_CONFIRM=true
             shift
             ;;
         -h|--help)
@@ -195,6 +201,21 @@ if [[ "$CURRENT_VERSION" != "none" ]]; then
         echo -e "${YELLOW}Notice: ${APP_NAME_PRETTY} v${CURRENT_VERSION} is already installed. Reinstalling...${NC}"
     else
         echo -e "${GREEN}Upgrade Notice: Upgrading ${APP_NAME_PRETTY} from v${CURRENT_VERSION} to v${APP_VERSION}...${NC}"
+    fi
+
+    # Upgrade/reinstall interactive confirmation prompt
+    if [[ "$AUTO_CONFIRM" == "false" && "$DRY_RUN" == "false" ]]; then
+        if [[ ! -t 0 ]]; then
+            echo -e "${YELLOW}Warning: Non-interactive terminal detected. Proceeding automatically...${NC}"
+        else
+            echo -ne "\nDo you want to proceed? [Y/n]: "
+            read -r CONFIRM
+            CONFIRM=$(echo "${CONFIRM:-y}" | tr '[:upper:]' '[:lower:]')
+            if [[ "$CONFIRM" != "y" && "$CONFIRM" != "yes" ]]; then
+                echo -e "${RED}Installation aborted by user.${NC}"
+                exit 0
+            fi
+        fi
     fi
 else
     echo -e "${GREEN}New installation: Installing ${APP_NAME_PRETTY} v${APP_VERSION}...${NC}"
