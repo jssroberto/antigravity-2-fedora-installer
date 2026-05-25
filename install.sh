@@ -40,6 +40,10 @@ LEGACY_REPOSITIONED=false
 DOWNLOAD_URL=""
 AUTO_CONFIRM=false
 
+# Resiliency states
+BACKUP_APP_DIR=""
+INSTALL_SUCCESSFUL=false
+
 # Print usage instructions
 show_help() {
     cat << EOF
@@ -233,6 +237,16 @@ echo -e "${GREEN}✓ All core utilities verified.${NC}"
 
 # Setup secure cleanup on script exit or interrupt
 cleanup() {
+    # Perform rollback if installation was interrupted or failed after a backup was created
+    if [[ "${INSTALL_SUCCESSFUL}" == "false" && -n "${BACKUP_APP_DIR:-}" && -d "$BACKUP_APP_DIR" ]]; then
+        echo -e "\n${RED}Installation interrupted or failed. Rolling back to previous state...${NC}"
+        if [[ -d "${TARGET_APP_DIR:-}" ]]; then
+            escalate_cmd rm -rf "$TARGET_APP_DIR"
+        fi
+        escalate_cmd mv "$BACKUP_APP_DIR" "$TARGET_APP_DIR"
+        echo -e "${GREEN}✓ Rollback completed successfully.${NC}"
+    fi
+
     if [[ -n "${TEMP_DIR:-}" && -d "$TEMP_DIR" ]]; then
         echo -e "${YELLOW}Cleaning up temporary directory: $TEMP_DIR${NC}"
         rm -rf "$TEMP_DIR"
@@ -276,10 +290,15 @@ escalate_cmd() {
 
 echo -e "${YELLOW}Extracting and installing binaries...${NC}"
 
-# Remove target directory if it already exists for a clean fresh install
+# Safely back up existing installation directory instead of removing it beforehand
 if [[ -d "$TARGET_APP_DIR" ]]; then
-    echo -e "${YELLOW}Removing old installation folder at $TARGET_APP_DIR...${NC}"
-    escalate_cmd rm -rf "$TARGET_APP_DIR"
+    BACKUP_APP_DIR="${TARGET_APP_DIR}.bak"
+    echo -e "${YELLOW}Backing up existing installation folder to $BACKUP_APP_DIR...${NC}"
+    # Remove any old residual backup directory if it exists from a previous crash
+    if [[ -d "$BACKUP_APP_DIR" ]]; then
+        escalate_cmd rm -rf "$BACKUP_APP_DIR"
+    fi
+    escalate_cmd mv "$TARGET_APP_DIR" "$BACKUP_APP_DIR"
 fi
 
 # Ensure parent directory exists
@@ -318,6 +337,13 @@ if [[ ! -f "$TARGET_APP_DIR/$BINARY_NAME" ]]; then
     exit 1
 fi
 escalate_cmd chmod +x "$TARGET_APP_DIR/$BINARY_NAME"
+
+# Commit Phase: Successful install, mark flag and clean up backup
+INSTALL_SUCCESSFUL=true
+if [[ -n "$BACKUP_APP_DIR" && -d "$BACKUP_APP_DIR" ]]; then
+    echo -e "${GREEN}✓ Verification passed. Removing installation backup...${NC}"
+    escalate_cmd rm -rf "$BACKUP_APP_DIR"
+fi
 
 # Configure symlink path
 echo -e "${YELLOW}Configuring system command shortcuts...${NC}"
