@@ -182,16 +182,17 @@ fi
 CURRENT_VERSION="none"
 if [[ -f "$TARGET_APP_DIR/version.txt" ]]; then
     CURRENT_VERSION=$(cat "$TARGET_APP_DIR/version.txt" 2>/dev/null || echo "unknown")
-elif [[ -d "$TARGET_APP_DIR" || ( "$INSTALL_SCOPE" == "system" && "$APP_NAME_SHORT" == "antigravity" && -d "/opt/Antigravity-x64" ) ]]; then
-    # Fallback to handle legacy installations:
-    # If the default Agent target directory or the legacy /opt/Antigravity-x64 folder exists,
-    # it is a legacy version (e.g. 2.0.0).
-    CURRENT_VERSION="2.0.0-legacy"
+elif [[ -d "$TARGET_APP_DIR" || -L "$TARGET_BIN_PATH" || ( "$INSTALL_SCOPE" == "system" && "$APP_NAME_SHORT" == "antigravity" && -d "/opt/Antigravity-x64" ) ]]; then
+    # Fallback: if version.txt is missing but the target directory, the symlink,
+    # or the legacy /opt/Antigravity-x64 folder exists, we classify it as a legacy pre-version-tracked install.
+    CURRENT_VERSION="legacy"
 fi
 
 if [[ "$CURRENT_VERSION" != "none" ]]; then
-    if [[ "$CURRENT_VERSION" == "$APP_VERSION" ]]; then
-        echo -e "${YELLOW}Notice: ${APP_NAME_PRETTY} v${CURRENT_VERSION} is already installed.${NC}"
+    if [[ "$CURRENT_VERSION" == "legacy" ]]; then
+        echo -e "${GREEN}Upgrade Notice: An existing installation was detected. Upgrading ${APP_NAME_PRETTY} to v${APP_VERSION}...${NC}"
+    elif [[ "$CURRENT_VERSION" == "$APP_VERSION" ]]; then
+        echo -e "${YELLOW}Notice: ${APP_NAME_PRETTY} v${CURRENT_VERSION} is already installed. Reinstalling...${NC}"
     else
         echo -e "${GREEN}Upgrade Notice: Upgrading ${APP_NAME_PRETTY} from v${CURRENT_VERSION} to v${APP_VERSION}...${NC}"
     fi
