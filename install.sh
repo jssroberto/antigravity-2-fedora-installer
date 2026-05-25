@@ -44,6 +44,15 @@ AUTO_CONFIRM=false
 BACKUP_APP_DIR=""
 INSTALL_SUCCESSFUL=false
 
+# System-wide installations require selective elevation helper
+escalate_cmd() {
+    if [[ "$INSTALL_SCOPE" == "system" ]]; then
+        sudo "$@"
+    else
+        "$@"
+    fi
+}
+
 # Print usage instructions
 show_help() {
     cat << EOF
@@ -294,14 +303,7 @@ if [[ "$DRY_RUN" == "true" ]]; then
     exit 0
 fi
 
-# System-wide installations require selective elevation
-escalate_cmd() {
-    if [[ "$INSTALL_SCOPE" == "system" ]]; then
-        sudo "$@"
-    else
-        "$@"
-    fi
-}
+
 
 echo -e "${YELLOW}Extracting and installing binaries...${NC}"
 
