@@ -111,10 +111,10 @@ Once the build completes successfully, install the packages using `dnf`:
 
 ```bash
 # Install the Antigravity Agent v2.0
-sudo dnf install ~/rpkg/$(uname -m)/antigravity2-2.0.6-*.rpm
+sudo dnf install ~/rpkg/$(uname -m)/antigravity2-2.0.11-*.rpm
 
-# Install the Antigravity IDE v2.0 (x86_64 only)
-sudo dnf install ~/rpkg/x86_64/antigravity2-ide-2.0.3-*.rpm
+# Install the Antigravity IDE v2.0
+sudo dnf install ~/rpkg/$(uname -m)/antigravity2-ide-2.0.4-*.rpm
 ```
 
 ## Usage

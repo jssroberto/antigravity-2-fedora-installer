@@ -9,17 +9,18 @@
 
 
 Name:           antigravity2-ide
-Version:        2.0.3
-Release:        2%{?dist}
+Version:        2.0.4
+Release:        1%{?dist}
 Summary:        Antigravity 2.0 IDE
 
 License:        Proprietary (Google Terms of Service)
 URL:            https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/index.html
-ExclusiveArch:  x86_64
+ExclusiveArch:  x86_64 aarch64
 
-Source0:        https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.0.3-6242596486512640/linux-x64/Antigravity%20IDE.tar.gz
-Source1:        antigravity2-ide.desktop
-Source2:        antigravity.png
+Source0:        https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.0.4-6381998290370560/linux-x64/Antigravity%20IDE.tar.gz
+Source1:        https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.0.4-6381998290370560/linux-arm/Antigravity%20IDE.tar.gz
+Source2:        antigravity2-ide.desktop
+Source3:        antigravity.png
 
 BuildRequires:  tar
 BuildRequires:  gzip
@@ -30,7 +31,12 @@ Experience liftoff (v2.0 Standalone IDE).
 
 %prep
 %setup -c -T
+%ifarch x86_64
 tar -xzf %{SOURCE0}
+%endif
+%ifarch aarch64
+tar -xzf %{SOURCE1}
+%endif
 mv "Antigravity IDE" %{name}-Linux
 
 # Rename the internal executable to prevent conflict with v1.0
@@ -55,11 +61,11 @@ ln -s /opt/%{name}-Linux/%{name} %{buildroot}%{_bindir}/%{name}
 
 # Install desktop file
 mkdir -p %{buildroot}%{_datadir}/applications
-install -m 644 %{SOURCE1} %{buildroot}%{_datadir}/applications/%{name}.desktop
+install -m 644 %{SOURCE2} %{buildroot}%{_datadir}/applications/%{name}.desktop
 
 # Install icon
 mkdir -p %{buildroot}%{_datadir}/icons/hicolor/512x512/apps
-install -m 644 %{SOURCE2} %{buildroot}%{_datadir}/icons/hicolor/512x512/apps/%{name}.png
+install -m 644 %{SOURCE3} %{buildroot}%{_datadir}/icons/hicolor/512x512/apps/%{name}.png
 
 %post
 /usr/bin/update-desktop-database &> /dev/null || :
@@ -76,6 +82,9 @@ install -m 644 %{SOURCE2} %{buildroot}%{_datadir}/icons/hicolor/512x512/apps/%{n
 %{_datadir}/icons/hicolor/512x512/apps/%{name}.png
 
 %changelog
+* Thu Jun 04 2026 Roberto Garcia <jrobertogarcia16@gmail.com> - 2.0.4-1
+- Update to version 2.0.4 with new download URLs and native ARM64 support
+
 * Thu May 28 2026 ApicalShark - 2.0.3-2
 - Fix StartupWMClass to match applicationName (antigravity-ide) so taskbar icon appears correctly
 

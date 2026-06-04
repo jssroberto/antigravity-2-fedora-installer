@@ -27,12 +27,16 @@ NC='\033[0m' # No Color
 INSTALL_SCOPE="system"
 APP_MODE="" # Starts empty to force interaction if not provided
 
-VERSION_IDE="2.0.3"
-VERSION_AGENT="2.0.10"
+VERSION_IDE="2.0.4"
+VERSION_AGENT="2.0.11"
 APP_VERSION=""
 
-DOWNLOAD_URL_IDE="https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.0.3-6242596486512640/linux-x64/Antigravity%20IDE.tar.gz"
-DOWNLOAD_URL_AGENT="https://storage.googleapis.com/antigravity-public/antigravity-hub/2.0.10-5119448496078848/linux-x64/Antigravity.tar.gz"
+DOWNLOAD_URL_IDE_X64="https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.0.4-6381998290370560/linux-x64/Antigravity%20IDE.tar.gz"
+DOWNLOAD_URL_IDE_ARM64="https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.0.4-6381998290370560/linux-arm/Antigravity%20IDE.tar.gz"
+DOWNLOAD_URL_AGENT_X64="https://storage.googleapis.com/antigravity-public/antigravity-hub/2.0.11-6560309696135168/linux-x64/Antigravity.tar.gz"
+DOWNLOAD_URL_AGENT_ARM64="https://storage.googleapis.com/antigravity-public/antigravity-hub/2.0.11-6560309696135168/linux-arm/Antigravity.tar.gz"
+DOWNLOAD_URL_IDE=""
+DOWNLOAD_URL_AGENT=""
 
 DRY_RUN=false
 TEMP_DIR=""
@@ -151,13 +155,11 @@ fi
 
 # Dynamic URL Selection based on architecture
 if [[ "$ARCH" == "aarch64" ]]; then
-    DOWNLOAD_URL_AGENT="https://storage.googleapis.com/antigravity-public/antigravity-hub/2.0.10-5119448496078848/linux-arm/Antigravity.tar.gz"
-    if [[ "$APP_MODE" == "ide" ]]; then
-        echo -e "${YELLOW}Warning: Native ARM64 build is not officially supported for the IDE variant.${NC}" >&2
-        echo -e "${YELLOW}Defaulting to the standard x86_64 package (requires compatibility layers).${NC}" >&2
-    fi
+    DOWNLOAD_URL_IDE="$DOWNLOAD_URL_IDE_ARM64"
+    DOWNLOAD_URL_AGENT="$DOWNLOAD_URL_AGENT_ARM64"
 else
-    DOWNLOAD_URL_AGENT="https://storage.googleapis.com/antigravity-public/antigravity-hub/2.0.10-5119448496078848/linux-x64/Antigravity.tar.gz"
+    DOWNLOAD_URL_IDE="$DOWNLOAD_URL_IDE_X64"
+    DOWNLOAD_URL_AGENT="$DOWNLOAD_URL_AGENT_X64"
 fi
 
 # Define dynamic variables based on selected mode
